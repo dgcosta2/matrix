@@ -199,7 +199,7 @@ The `Matrix` class inherits from `Indexable`, `MutableIndexable`, `Equatable`, a
 
 ### Indexing
 
-To access members of a `Matrix` object you can pass a list of indexes to `[...]`. For example, for the `Matrix` object
+To access members of a `Matrix` object you can pass a list of indices to `[...]`. For example, for the `Matrix` object
 ```
 def m1 = Matrix(~l: for List(i: 0..30): i, ~s: [5, 3, 2])
 ```
@@ -234,7 +234,7 @@ This operation does not create a new `Matrix` object, instead it creates a new `
 
 ### Equality
 
-Two `Matrix` objects are equal if and only if they have the same `data` *and* `shape`.
+Two `Matrix` objects are equal if and only if they have the same `data` and `shape`.
 
 ```
 > def m1 = Matrix(~l: [1, 2, 3, 4, 5, 6], ~s:[3, 2])
