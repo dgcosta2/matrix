@@ -1,0 +1,286 @@
+#lang rhombus
+
+export:
+  Matrix
+  <+>
+  ^
+  <*>
+  <.>
+
+class Matrix():
+  implements Indexable
+  implements Equatable
+  implements Printable
+  implements MutableIndexable
+
+  field data: []
+  field shape: []
+  field stride: []
+  constructor:
+  | ():
+      let matrix = super()
+      matrix.shape := [1]
+      matrix.stride := [1]
+      matrix.data := [0]
+      matrix
+  | (~rows: n :: PosInt, ~columns: k :: PosInt):
+      let l = for List(i: 0..(n * k)):
+        0
+      let matrix = super()
+      matrix.shape := [n, k]
+      matrix.stride := matrix.stride_from_shape(matrix.shape)
+      matrix.data := l
+      matrix
+  // takes a nested list and stores it linearly
+  | (~l: l :: List):
+      let matrix = super()
+      let flat = matrix.flat_list(l)
+      matrix.shape := matrix.read_shape(l)
+      matrix.stride := matrix.stride_from_shape(matrix.shape)
+      matrix.data := flat
+      matrix
+  // takes a flat list l and a shape list s
+  | (~l: l :: List, ~s: s :: List):
+      let p = for values(n = 1):
+        each:
+          v: s
+        n * v
+      if p == l.length()
+      | let matrix = super()
+        matrix.data := l
+        matrix.shape := s
+        matrix.stride := matrix.stride_from_shape(s)
+        matrix
+      | error("invalid shape for list l")
+  | (~s: s):
+      let p = for values(n = 1):
+        each:
+          v: s
+        n * v
+      let d = for List(i: 0..p):
+        0
+      let matrix = super()
+      matrix.data := d
+      matrix.shape := s
+      matrix.stride := matrix.stride_from_shape(s)
+      matrix
+
+  method add(other :: Matrix):
+    if shape == other.shape
+    | let l = (_ + _).map(data, other.data)
+      Matrix(~l: l, ~s: shape)
+    | error("matrix addition requires both matrices to have equal shape")
+
+  method s_mult(n :: Number):
+    let l = (n * _).map(data)
+    Matrix(~l: l, ~s: shape)
+
+  method mult(other :: Matrix):
+    if shape.length() == 2 && other.shape.length() == 2
+    | let m = Matrix(~s: [shape[0], other.shape[1]])
+      for:
+        each i: 1..=shape[0]
+        each j: 1..=other.shape[1]
+        each k: 1..=shape[1]
+        m[[i,j]] := m[[i,j]] + this[[i,k]] * other[[k,j]]
+      m
+    | error("Multiplication only allowed for 2x2 matrices")
+
+  // let's try one-dimension contraction
+  method contr(other :: Matrix):
+    if shape[shape.length() - 1] == other.shape[0]
+    | let m = Matrix(~s: shape.drop_last(1).append(other.shape.drop(1)))
+      let indices = m.shape.append(shape.take_last(1))
+      contr_helper(m, other, indices, [])
+      m
+    | error("last dimension of this must match first dimension of other")
+
+  method contr_helper(m :: Matrix, other :: Matrix, indices :: List, curr :: List):
+    match indices
+    | [a] : for (i: 1..=a):
+              m[curr] := m[curr] + this[curr.take(shape.length()-1).add(i)] * other[curr.take_last(other.shape.length()-1).insert(0, i)]
+    | [a, b, ...] : for (i: 1..=a):
+                      contr_helper(m, other, [b, ...], curr.add(i))
+                     
+  /*
+    swaps rows in-place
+  */
+  method swap_rows(r1 :: PosInt, r2 :: PosInt):
+    check shape.length() ~is 2
+    // finds initial position to begin replacing values
+    let i_pos1 = (r1 - 1) * stride[0]
+    let f_pos1 = i_pos1 + stride[0]
+    let i_pos2 = (r2 - 1) * stride[0]
+    let f_pos2 = i_pos2 + stride[0]
+    data := this.swap_elements(0, i_pos1, f_pos1, i_pos2, f_pos2)
+
+  method swap_elements(curr :: NonnegInt, i1 :: NonnegInt, f1 :: NonnegInt, i2 :: NonnegInt, f2 :: NonnegInt):
+    cond
+    | curr < i1 : [data[curr], & swap_elements(curr + 1, i1, f1, i2, f2)]
+    | curr >= i1 && curr < f1 : [data[i2 + (curr - i1)], & swap_elements(curr + 1, i1 ,f1, i2, f2)]
+    | curr >= f1 && curr < i2 : [data[curr], & swap_elements(curr + 1, i1, f1, i2, f2)]
+    | curr >= i2 && curr < f2 : [data[i1 + (curr - i2)], & swap_elements(curr + 1, i1, f1, i2, f2)]
+    | curr >= f2 : data.take_last(data.length() - f2)
+
+  method row_reduce():
+    if shape.length() == 2
+    | let m = copy()
+      let _ = m.row_reduce_helper(1, 1, 1)
+      m
+    | error("row reducing is only allowed for 2x2 matrices")
+
+  /*
+      calculates the determinant of this matrix using row reduction
+  */
+  method det():
+    if shape.length() == 2 && shape[0] == shape[1]
+    | let m = copy()
+      let f = m.row_reduce_helper(1, 1, 1)
+      for values(acc = f):
+        each:
+          i: 1..shape[0] + 1
+        acc * m[[i, i]]
+    | error("determinants are only calculated on square matrices")
+
+  // not yet finished. needs to turn all non-leading-one
+  // elements into zeros
+  method row_reduce_helper(r :: PosInt, c :: PosInt, f :: Real):
+    if r <= shape[0] && c <= shape[1]
+      // find the pivot in column c
+    | let i_max = find_max(r, c)
+      cond
+      | this[[i_max, c]] == 0:
+          // no pivot in this column
+          row_reduce_helper(r, c + 1, f)
+      | ~else:
+          swap_rows(r, i_max)
+          // for all rows below the pivot
+          for (i: r + 1..shape[0] + 1):
+            let factor = this[[i, c]] / this[[r, c]]
+            this[[i, c]] := 0
+            for (j: c + 1..shape[1] + 1):
+              this[[i, j]] := this[[i, j]] - this[[r, j]] * factor
+          if r == i_max
+          | row_reduce_helper(r + 1, c + 1, f)
+          | row_reduce_helper(r + 1, c + 1, f * -1)
+    | f
+      
+  private method find_max(r :: PosInt, c :: PosInt):
+    let mutable max = math.abs(this[[r, c]])
+    let mutable max_index = r
+    for (i: r..shape[0] + 1):
+      let curr = math.abs(this[[i, c]])
+      when curr > max
+      | max := curr
+        max_index := i
+    max_index
+    
+
+  // creates a copy of this matrix
+  method copy():
+    Matrix(~l: data, ~s: shape)
+ 
+  /*
+      The shape of an n-dimensional matrix is an n-length list
+      of numbers that represent the size of each dimmension of
+      the matrix
+   */
+  private method read_shape(l :: List):
+    match l
+    | [(a :: Number), b, ...]: [l.length()]
+    | [(a :: List), b, ...]: [l.length(), & read_shape(a)]
+  /*
+      flat_list takes a possibly nested list and flattens it
+   */
+  private method flat_list(l :: List):
+    match l
+    | []: []
+    | [(a :: Number), b, ...]: l
+    | [(a :: List), b, ...]: [& flat_list(a), & flat_list([b, ...])]
+  /*
+      The stride is a list of values that represent, for each dimension,
+      the scalar to multiply to the index when calling get()
+   */
+  private method stride_from_shape(shape :: List):
+    match shape
+    | [_]: [1]
+    | [a, & b]:
+        let s = stride_from_shape(b)
+        [s.first * b.first, & s]
+     
+  override method get(index :: List):
+    let i_pos = for values(acc = 0):
+      each:
+        i: index
+        s: 0..
+      acc + ((i - 1) * stride[s])
+    let f_pos = i_pos + stride[index.length() - 1]
+    let l = data.sublist(i_pos, f_pos)
+    if l.length() == 1
+    | l.first
+    | Matrix(~l: l, ~s: shape.sublist(index.length(), shape.length()))
+
+  /*
+      sets a specific value in the matrix.
+  */
+  override method set(index :: List, val :: Number):
+    check index.length() ~is shape.length() // method can only be called for setting values
+    if index.length() == shape.length()
+    | let pos = for values(acc = 0):
+        each:
+          i: index
+          s: 0..
+        acc + ((i - 1) * stride[s])
+      let new_l = data.set(pos, val) 
+      data := new_l
+    | error("method can only be called for setting values")
+
+  override method equals(other :: Matrix, recur):
+    recur(data, other.data) && recur(shape, other.shape)
+  override method hash_code(recur):
+    Equatable.hash_code_combine(recur(data), recur(shape))
+
+  // TODO: Add indentation for nested lists
+  override method describe(mode, recur):
+    //let str_data = to_string.map(this.data)
+    match shape
+    | [_]: PrintDesc.list(
+             "[", this.data.map(recur), "]") //.concat...
+    | [a, b, ...]:
+        PrintDesc.list(
+          "[",
+          for List(i: 1..=a):
+            (recur(this[[i]])),
+          "]")
+
+operator (x ^ y):
+  ~stronger_than: + - / *
+  match y
+  | 0: 1
+  | ~else: x * x ^ (y - 1)
+
+operator ((x :: Matrix) <+> (y :: Matrix)) :: Matrix:
+  ~weaker_than: **
+  ~stronger_than: ==              
+  x.add(y)
+
+operator ((n :: Number) <*> (m :: Matrix)) :: Matrix:
+  ~weaker_than: <.>
+  ~stronger_than: ==                
+  m.s_mult(n)
+
+operator ((x :: Matrix) <.> (y :: Matrix)) :: Matrix:
+  ~stronger_than: ==
+  x.contr(y)
+
+def m1 = Matrix(~l: [[3, 7], [4, 9]])
+def m2 = Matrix(~l: [[6, 2], [5, 8]])
+def m3 = Matrix(~l: [3, 4], ~s: [2])
+def m4 = Matrix(~l: [1, 3, 2, 1, 2, 3, 1, 2, 3, 3, 2, 1], ~s: [3, 2, 2])
+def m5 = Matrix(~l: [1, 2, -1, 0], ~s: [2, 2])
+def m6 = Matrix(~l: for List(i: 0..30):
+                      i, ~s: [2, 3, 5])
+def m_dot = m4.contr(m5)
+
+// examples and test cases with zero matrix and identity matrices
+// inverse of matrices
