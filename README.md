@@ -13,6 +13,8 @@ def m = Matrix()
 ```
 The no-args constructor creates an "empty" matrix with empty `data`, `shape`, and `stride` lists
 
+___
+
 ```
 def m = Matrix(~rows: n :: PosInt, ~columns: k :: PosInt)
 ```
