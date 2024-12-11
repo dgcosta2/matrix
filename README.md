@@ -47,7 +47,7 @@ def m = Matrix(~l: l :: List, ~s: s :: List)
 
 This constructor can be used for assigning a shape `s` to a flat list `l`. The constraint
 
-$ \Pi s_i = l.length() $
+$\Pi s_i = l.length()$
 
 where $s_i$ are the members of `s` must be obeyed.
 
@@ -138,7 +138,16 @@ performs a tensor dot product which, for 2-dimensional matrices, is the standard
 [[53, 62], [69, 80]]
 ```
 
-For example, for a tensor contraction between tensors `m1` and `m2` where `m1.shape` is `[3, 4, 2]` and `m2.shape` is `[2, 5, 7]`, the resulting tensor `m3 = m1 <.> m2` has shape `[3, 4, 5, 7]` (the last dimension in `m1` gets contracted with the first dimension of `m2`) and the element `m3[[i, j, k, m]]` is the sum of all `m1[[i, j, n]] * m2[[n, k, m]]` w
+For example, for a tensor contraction between tensors `m1` and `m2` where `m1.shape` is `[3, 4, 2]` and `m2.shape` is `[2, 5, 7]`, the resulting tensor `m3 = m1 <.> m2` has shape `[3, 4, 5, 7]` (the last dimension in `m1` gets contracted with the first dimension of `m2`) and the element `m3[[i, j, k, m]]` is the sum of all `m1[[i, j, n]] * m2[[n, k, m]]`
+
+As expected, multiplying a matrix $A_{n \times k}$ by $I_{n \times k}$ results in $A$ itself.
+
+```
+> def m_id = Matrix(~l: [1, 0, 0, 0, 1, 0, 0, 0, 1], ~s: [3, 3])
+> def m2 = Matrix(~l: [1, 2, 3, 4, 5, 6, 7, 8, 9], ~s: [3, 3])
+> m2 <.> m_id == m2
+#true 
+```
 
 ### Determinants
 
@@ -168,6 +177,20 @@ generates an upper-triangular `Matrix` object from `this` by performing Gaussian
 [[4, 9], [0, 1/4]]
 ```
 
+### Copy
+
+To create a new `Matrix` object with the same `data` and `shape` use the method `copy()`
+
+```
+> def m1 = Matrix(~s: [3, 4, 5])
+> def m2 = m1.copy()
+> m1 == m2
+#true
+> m1[[1, 2, 1]] := 1
+> m1 == m2
+#false
+```
+
 ## Object Protocols
 
 The `Matrix` class inherits from `Indexable`, `MutableIndexable`, `Equatable`, and `Printable`.
@@ -178,12 +201,14 @@ To access members of a `Matrix` object you can pass a list of indexes to `[...]`
 ```
 def m1 = Matrix(~l: for List(i: 0..30): i, ~s: [5, 3, 2])
 ```
-To access the first element in this object you can call
+you can access the first element in this object by calling
 ```
 > m1[[1, 1, 1]]
 0
 ```
 > Indexing in `Matrix` uses mathematical indices that begin at 1, not 0.
+
+> The outer brackets are a requirement of the `Indexable` Interface, while the inner ones represent the `List` of indices
 
 If the list passed has less elements than `shape`, a `Matrix` object is returned.
 
