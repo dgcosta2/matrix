@@ -240,12 +240,10 @@ class Matrix():
   override method hash_code(recur):
     Equatable.hash_code_combine(recur(data), recur(shape))
 
-  // TODO: Add indentation for nested lists
   override method describe(mode, recur):
-    //let str_data = to_string.map(this.data)
     match shape
     | [_]: PrintDesc.list(
-             "[", this.data.map(recur), "]") //.concat...
+             "[", this.data.map(recur), "]") 
     | [a, b, ...]:
         PrintDesc.list(
           "[",
@@ -281,6 +279,3 @@ def m5 = Matrix(~l: [1, 2, -1, 0], ~s: [2, 2])
 def m6 = Matrix(~l: for List(i: 0..30):
                       i, ~s: [2, 3, 5])
 def m_dot = m4.contr(m5)
-
-// examples and test cases with zero matrix and identity matrices
-// inverse of matrices
