@@ -2,7 +2,7 @@
 
 The Matrix class allows the creation of n-dimensional matrices (or tensors) in Rhombus along with a series of operations on them. The Matrix object contains three fields:
 
-- data: an internal flat representation of the `Matrix` as a `List` of `Number`s
+- data: an internal flat representation of the `Matrix` as a `List` of `Number` values
 - shape: a `List` containing the sizes of each dimension of the `Matrix` object
 - stride: a `List` of factors used for indexing
 
@@ -107,7 +107,7 @@ The method
 ```
 s_mult(n :: Number)
 ```
-multiplies every elements in `this` Matrix by `n`
+multiplies every element in `this` Matrix by `n`
 
 **Example**
 ```
