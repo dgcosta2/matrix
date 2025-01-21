@@ -99,4 +99,15 @@ def m_m3 = Matrix(~l: [3, 4], ~s: [2])
 def m_m4 = Matrix(~l: [1, 3, 2, 1, 2, 3, 1, 2, 3, 3, 2, 1], ~s: [3, 2, 2])
 def m_m5 = Matrix(~l: [1, 2, -1, 0], ~s: [2, 2])
 
+check m_m1 <.> m_m2 ~is Matrix(~l: [53, 62, 69, 80], ~s: [2, 2])
+check m_m2 <.> m_m3 ~is Matrix(~l: [26, 47])
+check m_m4 <.> m_m5 ~is Matrix(~l: [[[-2, 2], [1, 4]], [[-1, 4], [-1, 2]], [[0, 6], [1, 4]]])
+
+// solve tests
+check solve(Matrix(~l: [[1, 2], [3, 5]]), Matrix(~l: [1, 2])) ~is Matrix(~l: [-1, 1])
+def coef_1 = Matrix(~l: [1, -2, 1, 0, 2, -8, 5, 0, -5], ~s: [3, 3])
+check solve(coef_1, Matrix(~l: [0, 8, 10])) ~is Matrix(~l: [1, 0, -1])
+def sol_2 = Matrix(~l: [2, 3, 5])
+check solve(Matrix(~l: [[1, 0, 0], [0, 1, 0], [0, 0, 1]]), sol_2) ~is sol_2
+check solve(Matrix(~l: [1, 2, 4, 5]), Matrix(~l: [1, 2])) ~throws "a must be a square matrix and b must be a column vector"
 
