@@ -17,6 +17,7 @@ jobs:
         distribution: 'full'
         version: '8.15'
         packages: 'rhombus-lib'
+        dest: '/opt/racket'
 
     - name: Run Tests
       run: raco test test.rhm
