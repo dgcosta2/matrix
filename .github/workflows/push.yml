@@ -15,9 +15,9 @@ jobs:
       with:
         architecture: x64
         distribution: full
-        version: 8.2
+        version: 8.8.0.5
 
     - name: Install dependencies
-      run: raco pkg install --auto --batch --scope user
+      run: raco pkg install --auto --batch
     - name: Run Tests
       run: raco test test.rhm
