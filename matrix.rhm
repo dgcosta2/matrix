@@ -84,7 +84,7 @@ class Matrix():
         each k: 1..=shape[1]
         m[[i,j]] := m[[i,j]] + this[[i,k]] * other[[k,j]]
       m
-    | error("Multiplication only allowed for 2x2 matrices")
+    | error("Multiplication only allowed for 2-dimensional matrices")
 
   // let's try one-dimension contraction
   method contr(other :: Matrix):

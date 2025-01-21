@@ -1,0 +1,102 @@
+#lang rhombus
+
+import "matrix.rhm" open
+
+def m0 = Matrix()
+def m1 = Matrix(~rows: 3, ~columns: 5)
+def m2 = Matrix(~l: [[0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0]])
+def m3 = Matrix(~l: [[[1, 2, 3, 4],
+                      [2, 3, 4, 5]],
+                     [[1, 2, 3, 5],
+                      [3, 2, 1, 0]]])
+def m3_plus1 = Matrix (~l: [4, 3, 2, 1, 3, 2, 1, 0, 4, 3, 2, 0, 2, 3, 4, 5], ~s: [2, 2, 4])
+def m3_plus1_result = Matrix(~l: for List(i: 0..16): 5, ~s: [2, 2, 4])
+def m3_zero = Matrix(~l: for List(i: 0..16): 0, ~s: [2, 2, 4])
+def m3_2 = Matrix(~l: [[1, 2, 3, 5],
+                       [3, 2, 1, 0]])
+def m4 = Matrix(~l: [[[[1, 3, 4, 2, 5],
+                       [4, 6, 3, 23, 6]],
+                      [[5, 3, 1, 4, 5],
+                       [5, 2, 12, 4, 3]]],
+                     [[[0, 2, 4, 1, 5],
+                       [0, 5, 12, 2, 6]],
+                      [[9, 8, 2, 4, 4],
+                       [1, 1, 6, 2, 11]]]])
+def m4_zero = Matrix(~l: for List(i: 0..40): 0, ~s: [2, 2, 2, 5])
+def m5_tbt = Matrix(~l: [[1, 2, 3],
+                         [4, 5, 6]])
+def m6 = Matrix(~l: [[2, 4, 5, 6],
+                     [3, 2, 4, 5],
+                     [6, 4, 5, 3]])
+
+//checks for empty matrix
+check values(m0.data, m0.shape, m0.stride) ~is values([0], [1], [1])
+
+//checks for 2-dimensional matrix of zeros
+check m1.data ~is [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+check m1.shape ~is [3, 5]
+check m1.stride ~is [5, 1]
+// different constructors returning the same matrix
+check m1 ~is m2
+// invalid shape for incoming list
+check Matrix(~l: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], ~s: [1, 3]) ~throws "invalid shape for list l"
+// indexing
+check m3[[2]] ~is m3_2
+check m3[[2, 2, 1]] ~is 3
+check m4.shape ~is [2, 2, 2, 5]
+check m4[[1, 2, 1, 4]] ~is 4
+
+//addition tests
+check m3.shape ~is m3_plus1.shape
+check m3.add(m3_plus1) ~is m3_plus1_result
+check m3.add(m3_zero) ~is m3
+check m3 <+> m3_plus1 ~is m3_plus1_result
+check m3 <+> m1 ~throws "matrix addition requires both matrices to have equal shape"
+
+//scalar multiplication tests
+check m4.s_mult(0) ~is m4_zero
+check m4.s_mult(1) ~is m4
+check 1 <*> m4 ~is m4
+
+// swap elements tests
+let ls_m5 = m5_tbt.swap_elements(0, 0, 3, 3, 6)
+check ls_m5 ~is [4, 5, 6, 1, 2, 3]
+let ls_m6 = m6.swap_elements(0, 4, 6, 6, 8)
+check ls_m6 ~is [2, 4, 5, 6, 4, 5, 3, 2, 6, 4, 5, 3]
+
+// row swapping tests
+check m5_tbt.shape ~is [2, 3]
+m5_tbt.swap_rows(1, 2)
+check m5_tbt.data ~is [4, 5, 6, 1, 2, 3]
+check m5_tbt.shape ~is [2, 3]
+
+check m6.shape ~is [3, 4]
+m6.swap_rows(1, 1)
+check m6.data ~is [2, 4, 5, 6, 3, 2, 4, 5, 6, 4, 5, 3]
+
+//set tests
+m4[[1, 1, 1, 1]] := 0
+check m4[[1, 1, 1, 1]] ~is 0
+
+// determinant tests
+def m1_det = Matrix(~l: [2, -8, 6, 8, 3, -9, 5, 10, -3, 0, 1, -2, 1, -4, 0, 6], ~s: [4, 4])
+check m1_det.det() ~is -36
+def m2_det = Matrix(~l: [3, -1, 2, -5, 0, 5, -3, -6, -6, 7, -7, 4, -5, -8, 0, 9], ~s: [4, 4])
+check m2_det.det() ~is 0
+def m3_det = Matrix(~l:[[1, -4, 2],
+                        [-2, 8, -9],
+                        [-1, 7, 0]])
+check m3_det.det() ~is 15
+// failing determinant tests
+check m3.det() ~throws "determinants are only calculated on square matrices"
+
+//tensor multiplication tests
+def m_m1 = Matrix(~l: [[3, 7], [4, 9]])
+def m_m2 = Matrix(~l: [[6, 2], [5, 8]])
+def m_m3 = Matrix(~l: [3, 4], ~s: [2])
+def m_m4 = Matrix(~l: [1, 3, 2, 1, 2, 3, 1, 2, 3, 3, 2, 1], ~s: [3, 2, 2])
+def m_m5 = Matrix(~l: [1, 2, -1, 0], ~s: [2, 2])
+
+
