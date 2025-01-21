@@ -3,21 +3,20 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@master
 
     - name: Install Racket
       uses: Bogdanp/setup-racket@v1.6.1
       with:
-        architecture: x64
-        distribution: full
-        version: 8.8.0.5
-
-    - name: Install dependencies
-      run: raco pkg install --auto --batch
+        architecture: 'x64'
+        distribution: 'full'
+        version: '8.8.0.5'
+        packages: 'rhombus-lib'
+        
     - name: Run Tests
       run: raco test test.rhm
