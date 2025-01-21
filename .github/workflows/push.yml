@@ -15,8 +15,8 @@ jobs:
       with:
         architecture: 'x64'
         distribution: 'full'
-        version: '8.8.0.5'
+        version: '8.15'
         packages: 'rhombus-lib'
-        
+
     - name: Run Tests
       run: raco test test.rhm
