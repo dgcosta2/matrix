@@ -17,11 +17,7 @@ jobs:
         distribution: full
         version: 8.2
 
-    - name: Check if base package is installed
-      run: |
-        raco pkg show base || raco pkg install --auto --batch base
-
     - name: Install dependencies
-      run: raco pkg install --auto --batch
+      run: raco pkg install --auto --batch --scope user
     - name: Run Tests
       run: raco test test.rhm
