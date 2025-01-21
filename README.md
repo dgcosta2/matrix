@@ -179,6 +179,23 @@ generates an upper-triangular `Matrix` object from `this` by performing Gaussian
 [[4, 9], [0, 1/4]]
 ```
 
+### Solve
+
+```
+solve(a :: Matrix, b :: Matrix)
+```
+
+Computes the solution for a linear system of equations and returns a one-dimensional `Matrix` object with the solutions. 
+
+It solves the equation $ax = b$.
+
+```
+> def a = Matrix(~l: [[1, 2], [3, 5]])
+> def b = Matrix(~l: [1, 2])
+> def x = solve(a, b)
+> x
+[-1, 1]
+```
 ### Copy
 
 To create a new `Matrix` object with the same `data` and `shape` use the method `copy()`
@@ -246,4 +263,31 @@ Two `Matrix` objects are equal if and only if they have the same `data` and `sha
 > def m3 = Matrix(~l: [1, 2, 3, 4, 5, 6], ~s:[2, 3])
 > m1 == m3
 #false                    
+```
+
+## Provided Rhombus Operators
+
+### Exponentiation
+
+The infix operator `a ^ b` calculates $a^b$.
+
+`a :: Real`  
+`b :: NonnegInt`
+
+```
+> 3 ^ 2
+9
+```
+
+### Descending Ranges
+
+`a >..> b` generates a descending sequence of numbers from a, inclusive, to b, exclusive.
+
+`a >..= b` is inclusive on both ends.
+
+```
+> 5 >..> 0
+[5, 4, 3, 2, 1]
+> 5 >..= 0
+[5, 4, 3, 2, 1, 0]
 ```
