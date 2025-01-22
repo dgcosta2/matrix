@@ -6,7 +6,24 @@ The Matrix class allows the creation of n-dimensional matrices (or tensors) in R
 - shape: a `List` containing the sizes of each dimension of the `Matrix` object
 - stride: a `List` of factors used for indexing
 
+## Contents
 
+- [Constructors](#constructors)
+- [Operations](#operations)
+  - [Addition](#add)
+  - [Scalar Multiplication](#s_mult)
+  - [Tensor Dot Product (Bi-dimmensional Matrix Multiplication)](#tensor-dot-product)
+  - [Determinants](#determinants)
+  - [Row Reduction](#row-reduction)
+  - [Solve Linear Systems](#solve)
+  - [Copy a Matrix Object](#copy)
+- [Object Protocols](#object-protocols)
+  - [Indexing](#indexing)
+  - [Mutability](#mutability)
+  - [Equality](#equality)
+- [Rhombus Operators](#provided-rhombus-operators)
+  - [Exponentiation](#exponentiation)
+  - [Descending Ranges](#descending-ranges)
 ## Constructors
 ```
 def m = Matrix()
