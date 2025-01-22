@@ -10,6 +10,14 @@ jobs:
     - name: Checkout
       uses: actions/checkout@master
 
+    - name: Cache Racket dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/racket
+          ~/.local/share/racket
+        key: ${{ runner.os }}-racket-8.15
+
     - name: Install Racket
       uses: Bogdanp/setup-racket@v1.6.1
       with:
@@ -18,6 +26,9 @@ jobs:
         version: '8.15'
         packages: 'rhombus-lib'
         dest: '/opt/racket'
+
+    - name: Install Dependencies
+      run: raco pkg install --auto --skip-installed rhombus-lib
 
     - name: Run Tests
       run: raco test test.rhm
