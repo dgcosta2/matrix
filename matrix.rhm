@@ -9,6 +9,7 @@ export:
   >..>
   >..=
   solve
+  identity
 
 class Matrix():
   implements Indexable
@@ -301,7 +302,16 @@ fun desc_range(start, end, incl) :: List:
     | start == end: []
     | ~else: [start, & desc_range(start - 1, end, incl)]
   | error("starting point must be greater than or equal to ending point")
-  
+
+fun identity(n :: PosInt):
+  if n == 1
+  | Matrix(~l: [1])
+  | let l = for List(i : 0..n):
+      for List(j : 0..n):
+        if j == i
+        | 1
+        | 0
+    Matrix(~l: l)
 
 operator ((a :: Int) >..> (b :: Int)):
   ~weaker_than: + - / * ^

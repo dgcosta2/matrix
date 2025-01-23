@@ -111,3 +111,7 @@ def sol_2 = Matrix(~l: [2, 3, 5])
 check solve(Matrix(~l: [[1, 0, 0], [0, 1, 0], [0, 0, 1]]), sol_2) ~is sol_2
 check solve(Matrix(~l: [1, 2, 4, 5]), Matrix(~l: [1, 2])) ~throws "a must be a square matrix and b must be a column vector"
 
+// identity
+check identity(5) ~is Matrix(~l: [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1], ~s: [5, 5])
+check identity(1) ~is Matrix(~l: [1])
+

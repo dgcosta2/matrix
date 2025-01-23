@@ -91,6 +91,18 @@ This constructor allows the user to create a `Matrix` with the desired shape fil
 [[[0, 0], [0, 0]], [[0, 0], [0, 0]], [[0, 0], [0, 0]]]
 ```
 
+### Identity
+
+Constructs a bi-dimensional identity `Matrix` object.
+```
+identity(n :: PosInt) :: Matrix
+```
+
+```
+> identity(3)
+[[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+```
+
 ## Operations
 
 No operations involving `Matrix` objects happen in-place
