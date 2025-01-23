@@ -16,6 +16,7 @@ The Matrix class allows the creation of n-dimensional matrices (or tensors) in R
   - [Tensor Dot Product (Bi-dimmensional Matrix Multiplication)](#tensor-dot-product)
   - [Determinants](#determinants)
   - [Row Reduction](#row-reduction)
+  - [Cross Product](#cross-product)
   - [Solve Linear Systems](#solve)
   - [Copy a Matrix Object](#copy)
 - [Object Protocols](#object-protocols)
@@ -207,6 +208,20 @@ generates an upper-triangular `Matrix` object from `this` by performing Gaussian
 > def m1 = Matrix(~l: [[3, 7], [4, 9]])
 > m1.row_reduce()
 [[4, 9], [0, 1/4]]
+```
+
+### Cross Product
+
+```
+cross(a :: Matrix, b :: Matrix) :: Matrix
+```
+
+For two `Matrix` objects with `shape == [3]` this function calculates their cross-product. Parallel vectors result in the $\hat{0}$ vector.
+```
+> def a = Matrix(~l: [1, 0, 0])
+> def b = Matrix(~l: [0, 1, 0])
+> cross(a, b)
+[0, 0, 1]
 ```
 
 ### Solve

@@ -10,6 +10,7 @@ export:
   >..=
   solve
   identity
+  cross
 
 class Matrix():
   implements Indexable
@@ -312,6 +313,13 @@ fun identity(n :: PosInt):
         | 1
         | 0
     Matrix(~l: l)
+
+fun cross(a :: Matrix, b :: Matrix) :: Matrix:
+  if a.shape == [3] && b.shape == [3]
+  | let [a1, a2, a3] = a.data
+    let [b1, b2, b3] = b.data
+    Matrix(~l: [a2 * b3 - a3 * b2, a3 * b1 - a1 * b3, a1 * b2 - a2 * b1])
+  | error("both a and b must be vectors with 3 elements")
 
 operator ((a :: Int) >..> (b :: Int)):
   ~weaker_than: + - / * ^

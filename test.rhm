@@ -115,3 +115,7 @@ check solve(Matrix(~l: [1, 2, 4, 5]), Matrix(~l: [1, 2])) ~throws "a must be a s
 check identity(5) ~is Matrix(~l: [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1], ~s: [5, 5])
 check identity(1) ~is Matrix(~l: [1])
 
+// cross-product
+check cross(Matrix(~l: [5, 6, 2]), Matrix(~l: [1, 1, 1])) ~is Matrix(~l: [4, -3, -1])
+check cross(Matrix(~l: [1, 2, 3]), Matrix(~l: [2, 4, 6])) ~is Matrix(~s: [3])
+check cross(Matrix(~l: [1, 0, 0]), Matrix(~l: [0, 1, 0])) ~is Matrix(~l: [0, 0, 1])
