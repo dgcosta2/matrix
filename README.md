@@ -9,6 +9,7 @@ The Matrix class allows the creation of n-dimensional matrices (or tensors) in R
 ## Contents
 
 - [Constructors](#constructors)
+  - [Identity](#identity)
 - [Operations](#operations)
   - [Addition](#add)
   - [Scalar Multiplication](#s_mult)
