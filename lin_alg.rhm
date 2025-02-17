@@ -1,0 +1,60 @@
+#lang rhombus
+
+import "matrix.rhm" open
+import "list_ops.rhm" as ListOps
+import "operators.rhm" open
+
+export:
+  solve
+  row_reduce
+  det
+
+
+fun det(a :: Matrix):
+  if a.is_square()
+  | let m = a.copy()
+    let f = m.row_reduce_helper(1, 1, 1)
+    for values(acc = f):
+      each:
+        i: 1..a.shape[0] + 1
+      acc * m[[i, i]]
+  | error("determinants are only calculated on square matrices")
+
+/*
+  takes a coefficient matrix m1 and a column vector m2 and
+  creates an augmented matrix with m2 appended to the right
+  of m1
+
+  m1 is not modified in this operation.
+*/
+fun merge_on_right(m1 :: Matrix, m2 :: Matrix) :: Matrix:
+  let l = ListOps.merge_lists(m1.data, m2.data, m1.shape.last)
+  Matrix(~l: l, ~s: [m1.shape.first, m1.shape.last + 1])
+
+
+/*
+  solves a system of linear equations and returns
+  a column vector with the exact solution.
+*/
+fun solve(a :: Matrix, b :: Matrix) :: Matrix:
+  if a.is_square() && b.shape[0] == a.shape[0] && b.shape.length() == 1
+  | let m = merge_on_right(a, b).row_reduce()
+    let mutable l = [m[m.shape] / m[[m.shape.first, m.shape.last - 1]]]
+    // starting on one row above the already calculated result
+    for (r : m.shape.first - 1 >..= 1): 
+      let mutable res = m[[r, m.shape[1]]]
+      for (i : l.length() - 1 >..= 0):
+        res := res - m[[r, m.shape[1] - 1 - i]] * l[i]
+      res := res / m[[r, r]]
+      l := l.add(res)
+    Matrix(~l: l.reverse(), ~s: [l.length()])
+  | error("a must be a square matrix and b must be a column vector")
+
+
+fun row_reduce(a :: Matrix):
+  if a.shape.length() == 2
+  | let m = a.copy()
+    let _ = m.row_reduce_helper(1, 1, 1)
+    m
+  | error("row reducing is only allowed for bi-dimensional matrices")
+

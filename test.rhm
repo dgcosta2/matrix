@@ -1,6 +1,9 @@
 #lang rhombus
 
+import "basic.rhm" open
 import "matrix.rhm" open
+import "operators.rhm" open
+import "lin_alg.rhm" open
 
 def m0 = Matrix()
 def m1 = Matrix(~rows: 3, ~columns: 5)
@@ -50,14 +53,14 @@ check m4[[1, 2, 1, 4]] ~is 4
 
 //addition tests
 check m3.shape ~is m3_plus1.shape
-check m3.add(m3_plus1) ~is m3_plus1_result
-check m3.add(m3_zero) ~is m3
+check add(m3, m3_plus1) ~is m3_plus1_result
+check add(m3, m3_zero) ~is m3
 check m3 <+> m3_plus1 ~is m3_plus1_result
 check m3 <+> m1 ~throws "matrix addition requires both matrices to have equal shape"
 
 //scalar multiplication tests
-check m4.s_mult(0) ~is m4_zero
-check m4.s_mult(1) ~is m4
+check s_mult(m4, 0) ~is m4_zero
+check s_mult(m4, 1) ~is m4
 check 1 <*> m4 ~is m4
 
 // swap elements tests
@@ -82,15 +85,15 @@ check m4[[1, 1, 1, 1]] ~is 0
 
 // determinant tests
 def m1_det = Matrix(~l: [2, -8, 6, 8, 3, -9, 5, 10, -3, 0, 1, -2, 1, -4, 0, 6], ~s: [4, 4])
-check m1_det.det() ~is -36
+check det(m1_det) ~is -36
 def m2_det = Matrix(~l: [3, -1, 2, -5, 0, 5, -3, -6, -6, 7, -7, 4, -5, -8, 0, 9], ~s: [4, 4])
-check m2_det.det() ~is 0
+check det(m2_det) ~is 0
 def m3_det = Matrix(~l:[[1, -4, 2],
                         [-2, 8, -9],
                         [-1, 7, 0]])
-check m3_det.det() ~is 15
+check det(m3_det) ~is 15
 // failing determinant tests
-check m3.det() ~throws "determinants are only calculated on square matrices"
+check det(m3) ~throws "determinants are only calculated on square matrices"
 
 //tensor multiplication tests
 def m_m1 = Matrix(~l: [[3, 7], [4, 9]])

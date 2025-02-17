@@ -1,0 +1,30 @@
+#lang rhombus
+
+export:
+  ^
+  >..>
+  >..=
+
+
+fun desc_range(start, end, incl) :: List:
+  if start >= end
+  | cond
+    | start == end && incl: [end]
+    | start == end: []
+    | ~else: [start, & desc_range(start - 1, end, incl)]
+  | error("starting point must be greater than or equal to ending point")
+    
+operator ((a :: Int) >..> (b :: Int)):
+  ~weaker_than: + - / * ^
+  desc_range(a, b, #false)
+
+operator ((a :: Int) >..= (b :: Int)):
+  ~weaker_than: + - / * ^
+  desc_range(a, b, #true)
+    
+operator ((x :: Real) ^ (y :: NonnegInt)):
+  ~stronger_than: + - / *
+  match y
+  | 0: 1
+  | ~else: x * x ^ (y - 1)
+

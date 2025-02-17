@@ -1,16 +1,11 @@
 #lang rhombus
 
+import "operators.rhm" open
+import "list_ops.rhm" as ListOps
+
 export:
   Matrix
-  <+>
-  ^
-  <*>
   <.>
-  >..>
-  >..=
-  solve
-  identity
-  cross
 
 class Matrix():
   implements Indexable
@@ -39,7 +34,7 @@ class Matrix():
   // takes a nested list and stores it linearly
   | (~l: l :: List):
       let matrix = super()
-      let flat = matrix.flat_list(l)
+      let flat = ListOps.flat_list(l)
       matrix.shape := matrix.read_shape(l)
       matrix.stride := matrix.stride_from_shape(matrix.shape)
       matrix.data := flat
@@ -70,27 +65,6 @@ class Matrix():
       matrix.stride := matrix.stride_from_shape(s)
       matrix
 
-  method add(other :: Matrix):
-    if shape == other.shape
-    | let l = (_ + _).map(data, other.data)
-      Matrix(~l: l, ~s: shape)
-    | error("matrix addition requires both matrices to have equal shape")
-
-  method s_mult(n :: Number):
-    let l = (n * _).map(data)
-    Matrix(~l: l, ~s: shape)
-
-  method mult(other :: Matrix):
-    if shape.length() == 2 && other.shape.length() == 2
-    | let m = Matrix(~s: [shape[0], other.shape[1]])
-      for:
-        each i: 1..=shape[0]
-        each j: 1..=other.shape[1]
-        each k: 1..=shape[1]
-        m[[i,j]] := m[[i,j]] + this[[i,k]] * other[[k,j]]
-      m
-    | error("Multiplication only allowed for 2-dimensional matrices")
-
   // let's try one-dimension contraction
   method contr(other :: Matrix):
     if shape[shape.length() - 1] == other.shape[0]
@@ -100,6 +74,22 @@ class Matrix():
       m
     | error("last dimension of this must match first dimension of other")
 
+  method validate_axes(axes :: List, shape1 :: List, shape2 :: List):
+    if axes[0].length[0] == axes[1].length()
+    | for (i: axes[0], j: axes[1]):
+        unless shape1[i] == shape2[j]
+        | #false
+      #true
+    | #false
+/*      
+  method tensor_dot(other :: Matrix, axes :: List):
+    if validate_axes(axes, shape, other.shape)
+    | let m = Matrix(~s: contracted_shape(axes, shape, other.shape))
+      let indices = 
+
+  method dot_helper(m :: Matrix, other :: Matrix, axes :: List, indices :: List, curr :: List):
+    match indices
+    */
   method contr_helper(m :: Matrix, other :: Matrix, indices :: List, curr :: List):
     match indices
     | [a] : for (i: 1..=a):
@@ -132,20 +122,7 @@ class Matrix():
     | let m = copy()
       let _ = m.row_reduce_helper(1, 1, 1)
       m
-    | error("row reducing is only allowed for 2x2 matrices")
-
-  /*
-      calculates the determinant of this matrix using row reduction
-  */
-  method det():
-    if shape.length() == 2 && shape[0] == shape[1]
-    | let m = copy()
-      let f = m.row_reduce_helper(1, 1, 1)
-      for values(acc = f):
-        each:
-          i: 1..shape[0] + 1
-        acc * m[[i, i]]
-    | error("determinants are only calculated on square matrices")
+    | error("row reducing is only allowed for bi-dimensional matrices")
 
   // not yet finished. needs to turn all non-leading-one
   // elements into zeros
@@ -197,14 +174,8 @@ class Matrix():
     match l
     | [(a :: Number), b, ...]: [l.length()]
     | [(a :: List), b, ...]: [l.length(), & read_shape(a)]
-  /*
-      flat_list takes a possibly nested list and flattens it
-   */
-  private method flat_list(l :: List):
-    match l
-    | []: []
-    | [(a :: Number), b, ...]: l
-    | [(a :: List), b, ...]: [& flat_list(a), & flat_list([b, ...])]
+
+
   /*
       The stride is a list of values that represent, for each dimension,
       the scalar to multiply to the index when calling get()
@@ -258,94 +229,7 @@ class Matrix():
           for List(i: 1..=a):
             (recur(this[[i]])),
           "]")
-
-/*
-  merges two data lists from Matrix objects.
-  l2 must come from a unidimensional Matrix
-*/
-fun merge_lists(l1 :: List, l2 :: List, take :: PosInt):
-  match l1
-  | []: l2
-  | [a, b, ...]: l1.take(take) ++ [l2.first] ++ merge_lists(l1.drop(take), l2.rest, take)
-
-/*
-  takes a coefficient matrix m1 and a column vector m2 and
-  creates an augmented matrix with m2 appended to the right
-  of m1
-
-  m1 is not modified in this operation.
-*/
-fun merge_on_right(m1 :: Matrix, m2 :: Matrix) :: Matrix:
-  let l = merge_lists(m1.data, m2.data, m1.shape.last)
-  Matrix(~l: l, ~s: [m1.shape.first, m1.shape.last + 1])
-
-/*
-  solves a system of linear equations and returns
-  a column vector with the exact solution.
-*/
-fun solve(a :: Matrix, b :: Matrix) :: Matrix:
-  if a.is_square() && b.shape[0] == a.shape[0] && b.shape.length() == 1
-  | let m = merge_on_right(a, b).row_reduce()
-    let mutable l = [m[m.shape] / m[[m.shape.first, m.shape.last - 1]]]
-    for (r : m.shape.first - 1 >..= 1): // starting on one row above the already calculated result
-      let mutable res = m[[r, m.shape[1]]]
-      for (i : l.length() - 1 >..= 0):
-        res := res - m[[r, m.shape[1] - 1 - i]] * l[i]
-      res := res / m[[r, r]]
-      l := l.add(res)
-    Matrix(~l: l.reverse(), ~s: [l.length()])
-  | error("a must be a square matrix and b must be a column vector")
-
-fun desc_range(start, end, incl) :: List:
-  if start >= end
-  | cond
-    | start == end && incl: [end]
-    | start == end: []
-    | ~else: [start, & desc_range(start - 1, end, incl)]
-  | error("starting point must be greater than or equal to ending point")
-
-fun identity(n :: PosInt):
-  if n == 1
-  | Matrix(~l: [1])
-  | let l = for List(i : 0..n):
-      for List(j : 0..n):
-        if j == i
-        | 1
-        | 0
-    Matrix(~l: l)
-
-fun cross(a :: Matrix, b :: Matrix) :: Matrix:
-  if a.shape == [3] && b.shape == [3]
-  | let [a1, a2, a3] = a.data
-    let [b1, b2, b3] = b.data
-    Matrix(~l: [a2 * b3 - a3 * b2, a3 * b1 - a1 * b3, a1 * b2 - a2 * b1])
-  | error("both a and b must be vectors with 3 elements")
-
-operator ((a :: Int) >..> (b :: Int)):
-  ~weaker_than: + - / * ^
-  desc_range(a, b, #false)
-
-operator ((a :: Int) >..= (b :: Int)):
-  ~weaker_than: + - / * ^
-  desc_range(a, b, #true)
     
-operator ((x :: Real) ^ (y :: NonnegInt)):
-  ~stronger_than: + - / *
-  match y
-  | 0: 1
-  | ~else: x * x ^ (y - 1)
-
-operator ((x :: Matrix) <+> (y :: Matrix)) :: Matrix:
-  ~weaker_than: **
-  ~stronger_than: ==              
-  x.add(y)
-
-operator ((n :: Number) <*> (m :: Matrix)) :: Matrix:
-  ~weaker_than: <.>
-  ~stronger_than: ==                
-  m.s_mult(n)
-
 operator ((x :: Matrix) <.> (y :: Matrix)) :: Matrix:
   ~stronger_than: ==
   x.contr(y)
-

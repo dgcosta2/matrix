@@ -1,0 +1,26 @@
+#lang rhombus
+
+export:
+  flat_list
+  merge_lists
+
+/*
+    flat_list takes a possibly nested list and flattens it
+ */
+fun flat_list(l :: List):
+  match l
+  | []: []
+  | [(a :: Number), b, ...]: l
+  | [(a :: List), b, ...]: [& flat_list(a), & flat_list([b, ...])]
+
+/*
+  merges two data lists from Matrix objects.
+  l2 must come from a unidimensional Matrix.
+  take is the number of elements from l1 to be taken on each appending operation.
+
+  Example: merge_lists([1, 2, 3, 4], [10, 11], 2) => [1, 2, 10, 3, 4, 11]
+*/
+fun merge_lists(l1 :: List, l2 :: List, take :: PosInt):
+  match l1
+  | []: l2
+  | [a, b, ...]: l1.take(take) ++ [l2.first] ++ merge_lists(l1.drop(take), l2.rest, take)
