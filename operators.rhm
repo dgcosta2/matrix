@@ -23,8 +23,8 @@ fun
     )
     
 operator (a :: Int) >.. (b :: Int):
-    ~weaker_than: + - / * ^
-    desc_range(a, b, #false)
+  ~weaker_than: + - / * ^
+  desc_range(a, b, #false)
 
 operator ((a :: Int) >..= (b :: Int)):
   ~weaker_than: + - / * ^
