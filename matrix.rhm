@@ -41,7 +41,7 @@ class Matrix():
       matrix
   // takes a flat list l and a shape list s
   | (~l: l :: List, ~s: s :: List):
-      let p = ListOps.reduce(l, 1, (_ * _))
+      let p = ListOps.reduce(s, 1, (_ * _))
       if p == l.length()
       | let matrix = super()
         matrix.data := l
