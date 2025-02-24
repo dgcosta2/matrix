@@ -41,10 +41,7 @@ class Matrix():
       matrix
   // takes a flat list l and a shape list s
   | (~l: l :: List, ~s: s :: List):
-      let p = for values(n = 1):
-        each:
-          v: s
-        n * v
+      let p = ListOps.reduce(l, 1, (_ * _))
       if p == l.length()
       | let matrix = super()
         matrix.data := l
@@ -65,6 +62,13 @@ class Matrix():
       matrix.stride := matrix.stride_from_shape(s)
       matrix
 
+  method re_shape(new_shape :: List) :: Matrix:
+    if ListOps.reduce(new_shape, 1, (_ * _)) == data.length()
+    | shape := new_shape
+      stride := stride_from_shape(new_shape)
+      this
+    | error("invalid shape for this matrix")
+
   // let's try one-dimension contraction
   method contr(other :: Matrix):
     if shape[shape.length() - 1] == other.shape[0]
@@ -73,23 +77,7 @@ class Matrix():
       contr_helper(m, other, indices, [])
       m
     | error("last dimension of this must match first dimension of other")
-
-  method validate_axes(axes :: List, shape1 :: List, shape2 :: List):
-    if axes[0].length[0] == axes[1].length()
-    | for (i: axes[0], j: axes[1]):
-        unless shape1[i] == shape2[j]
-        | #false
-      #true
-    | #false
-/*      
-  method tensor_dot(other :: Matrix, axes :: List):
-    if validate_axes(axes, shape, other.shape)
-    | let m = Matrix(~s: contracted_shape(axes, shape, other.shape))
-      let indices = 
-
-  method dot_helper(m :: Matrix, other :: Matrix, axes :: List, indices :: List, curr :: List):
-    match indices
-    */
+    
   method contr_helper(m :: Matrix, other :: Matrix, indices :: List, curr :: List):
     match indices
     | [a] : for (i: 1..=a):
@@ -229,7 +217,32 @@ class Matrix():
           for List(i: 1..=a):
             (recur(this[[i]])),
           "]")
-    
+
+
+fun validate_axes(axes :: List, shape1 :: List, shape2 :: List):
+  if axes[0].length[0] == axes[1].length()
+  | for (i: axes[0], j: axes[1]):
+      unless shape1[i] == shape2[j]
+      | #false
+    #true
+  | #false
+
+fun remove_at_index(l :: List, ind :: NonnegInt || List):
+  match ind
+  | (a :: NonnegInt): l.sublist(..ind) ++ l.sublist(ind + 1..)
+  | [a, b, ...]: remove_at_index(remove_at_index(l, a), [b, ...])
+  
+     
+/*fun tensor_dot(a :: Matrix, b :: Matrix, axes :: List):
+  if validate_axes(axes, a.shape, b.shape)
+  | let m = Matrix(~s: contracted_shape(axes, shape, other.shape))
+    let non_contr_a = axes[0].forEach(remove_at_index(a.shape, _))
+    let ind = m.shape ++
+  | error("doesn't work honey")*/
+
+/*fun dot_helper(m :: Matrix, other :: Matrix, axes :: List, indices :: List, curr :: List):
+  match indices */
+  
 operator ((x :: Matrix) <.> (y :: Matrix)) :: Matrix:
   ~stronger_than: ==
   x.contr(y)

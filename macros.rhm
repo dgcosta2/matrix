@@ -1,0 +1,17 @@
+#lang rhombus
+
+import "matrix.rhm" open
+
+export:
+  matrix
+  shape
+
+macro 'matrix $l':
+  ~weaker_than: ++ <+> <.>
+  'Matrix(~l: $l)'
+
+operator (m :: Matrix) shape (s :: List):
+  ~weaker_than: matrix
+  m.re_shape(s)
+  
+

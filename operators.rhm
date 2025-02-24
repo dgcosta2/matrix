@@ -2,21 +2,29 @@
 
 export:
   ^
-  >..>
+  >..
   >..=
 
-
-fun desc_range(start, end, incl) :: List:
-  if start >= end
-  | cond
-    | start == end && incl: [end]
-    | start == end: []
-    | ~else: [start, & desc_range(start - 1, end, incl)]
-  | error("starting point must be greater than or equal to ending point")
+fun
+| desc_range(from :: Int, to :: Int, incl :: Boolean) :: Sequence:
+    if from >= to
+    | Sequence.make(
+        ~initial_position: from,
+        ~position_to_element: fun(i): i,
+        ~position_to_next: fun(i): i - 1,
+        ~continue_at_position: fun(i): if incl | i >= to | i > to
+      )
+    | error("desc_range requires a starting point greater than or equal to the ending point")
+| desc_range(from :: Int) :: Sequence:
+    Sequence.make(
+      ~initial_position: from,
+      ~position_to_element: fun(i): i,
+      ~position_to_next: fun(i): i - 1
+    )
     
-operator ((a :: Int) >..> (b :: Int)):
-  ~weaker_than: + - / * ^
-  desc_range(a, b, #false)
+operator (a :: Int) >.. (b :: Int):
+    ~weaker_than: + - / * ^
+    desc_range(a, b, #false)
 
 operator ((a :: Int) >..= (b :: Int)):
   ~weaker_than: + - / * ^

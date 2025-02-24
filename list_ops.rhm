@@ -3,6 +3,7 @@
 export:
   flat_list
   merge_lists
+  reduce
 
 /*
     flat_list takes a possibly nested list and flattens it
@@ -24,3 +25,8 @@ fun merge_lists(l1 :: List, l2 :: List, take :: PosInt):
   match l1
   | []: l2
   | [a, b, ...]: l1.take(take) ++ [l2.first] ++ merge_lists(l1.drop(take), l2.rest, take)
+
+fun reduce(l :: List, n :: Any, f :: Function):
+  match l
+  | []: n
+  | [a, b, ...]: reduce([b, ...], f(n, a), f)
