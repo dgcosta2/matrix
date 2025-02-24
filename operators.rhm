@@ -22,7 +22,7 @@ fun
       ~position_to_next: fun(i): i - 1
     )
     
-operator (a :: Int) >.. (b :: Int):
+operator ((a :: Int) >.. (b :: Int)):
   ~weaker_than: + - / * ^
   desc_range(a, b, #false)
 
