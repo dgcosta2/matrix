@@ -1,4 +1,4 @@
-#lang rhombus
+#lang rhombus/and_meta
 
 export:
   ^
@@ -21,10 +21,31 @@ fun
       ~position_to_element: fun(i): i,
       ~position_to_next: fun(i): i - 1
     )
+
+
+meta fun
+| desc_range(from :: Int, to :: Int, incl :: Boolean) :: Sequence:
+    if from >= to
+    | Sequence.make(
+        ~initial_position: from,
+        ~position_to_element: fun(i): i,
+        ~position_to_next: fun(i): i - 1,
+        ~continue_at_position: fun(i): if incl | i >= to | i > to
+      )
+    | error("desc_range requires a starting point greater than or equal to the ending point")
+| desc_range(from :: Int) :: Sequence:
+    Sequence.make(
+      ~initial_position: from,
+      ~position_to_element: fun(i): i,
+      ~position_to_next: fun(i): i - 1
+    )
     
-operator ((a :: Int) >.. (b :: Int)):
-  ~weaker_than: + - / * ^
-  desc_range(a, b, #false)
+macro >..:
+  ~order: enumeration
+| '$a >.. $b $()':
+    'desc_range($a, $b, #false)'
+| '$a >.. $()':
+    'desc_range($a)'
 
 operator ((a :: Int) >..= (b :: Int)):
   ~weaker_than: + - / * ^

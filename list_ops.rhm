@@ -4,6 +4,7 @@ export:
   flat_list
   merge_lists
   reduce
+  swap
 
 /*
     flat_list takes a possibly nested list and flattens it
@@ -30,3 +31,12 @@ fun reduce(l :: List, n :: Any, f :: Function):
   match l
   | []: n
   | [a, b, ...]: reduce([b, ...], f(n, a), f)
+
+fun swap(l :: List, a :: NonnegInt, b :: NonnegInt) :: List:
+  for List:
+    each i in 0..l.length()
+    cond
+    | i == a: l[b]
+    | i == b: l[a]
+    | ~else: l[i]
+      

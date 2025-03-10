@@ -18,6 +18,7 @@ The Matrix class allows the creation of n-dimensional matrices (or tensors) in R
   - [Row Reduction](#row-reduction)
   - [Cross Product](#cross-product)
   - [Solve Linear Systems](#solve)
+  - [Inverse](#inverse)
   - [Copy a Matrix Object](#copy)
 - [Object Protocols](#object-protocols)
   - [Indexing](#indexing)
@@ -188,10 +189,10 @@ The library can calculate the determinant of any `Matrix` objects in which the `
 
 ```
 > def m1 = Matrix(~l: [2, -8, 6, 8, 3, -9, 5, 10, -3, 0, 1, -2, 1, -4, 0, 6], ~s: [4, 4])
-> m1.det()
+> det(m1)
 -36
 > def m2 = Matrix(~l: [3, -1, 2, -5, 0, 5, -3, -6, -6, 7, -7, 4, -5, -8, 0, 9], ~s: [4, 4])
-> m2.det()
+> det(m2)
 0
 ```
 
@@ -241,6 +242,25 @@ It solves the equation $ax = b$.
 > x
 [-1, 1]
 ```
+
+### Inverse
+
+```
+inverse(a :: Matrix)
+```
+
+Computes the inverse of the matrix `a`.  
+`a` must be an invertible square matrix.
+
+```
+> def a = identity(3)
+> inverse(a)
+[[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+> def b = Matrix(~l: [[1, 2, 3], [4, 5, 6], [7, 2, 9]])
+> inverse(b)
+[[-11/12, 1/3, 1/12], [-1/6, 1/3, -1/6], [3/4, -1/3, 1/12]]
+```
+
 ### Copy
 
 To create a new `Matrix` object with the same `data` and `shape` use the method `copy()`
@@ -326,13 +346,18 @@ The infix operator `a ^ b` calculates $a^b$.
 
 ### Descending Ranges
 
-`a >..> b` generates a descending sequence of numbers from a, inclusive, to b, exclusive.
+`a >..` generates a sequence from a, inclusive, to `#neginf`  
+
+`a >.. b` generates a descending sequence of numbers from a, inclusive, to b, exclusive.
 
 `a >..= b` is inclusive on both ends.
 
 ```
-> 5 >..> 0
-[5, 4, 3, 2, 1]
-> 5 >..= 0
-[5, 4, 3, 2, 1, 0]
+> for List:
+    each:
+      i in 3 >.. 0
+      j in 0 >..
+    [i, j]
+    
+[[3, 0], [2, -1], [1, -2]]
 ```

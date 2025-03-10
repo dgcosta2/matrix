@@ -1,4 +1,4 @@
-#lang rhombus
+#lang rhombus/and_meta
 
 import "operators.rhm" open
 import "list_ops.rhm" as ListOps
@@ -50,10 +50,7 @@ class Matrix():
         matrix
       | error("invalid shape for list l")
   | (~s: s):
-      let p = for values(n = 1):
-        each:
-          v: s
-        n * v
+      let p = ListOps.reduce(s, 1, (_ * _))
       let d = for List(i: 0..p):
         0
       let matrix = super()
@@ -68,6 +65,18 @@ class Matrix():
       stride := stride_from_shape(new_shape)
       this
     | error("invalid shape for this matrix")
+
+  method rows() :: PosInt:
+    if shape.length() == 2 || shape.length() == 1
+    | shape[0]
+    | error("number of rows is only available for bi-dimensional matrices or uni-dimensional vectors")
+
+  method cols() :: PosInt:
+    match shape.length()
+    | 1: 1
+    | 2: shape[1]
+    | ~else: error("number of columns is only available for bi-dimensional matrices or uni-dimensional vectors")
+    
 
   // let's try one-dimension contraction
   method contr(other :: Matrix):
@@ -95,15 +104,11 @@ class Matrix():
     let f_pos1 = i_pos1 + stride[0]
     let i_pos2 = (r2 - 1) * stride[0]
     let f_pos2 = i_pos2 + stride[0]
-    data := this.swap_elements(0, i_pos1, f_pos1, i_pos2, f_pos2)
-
-  method swap_elements(curr :: NonnegInt, i1 :: NonnegInt, f1 :: NonnegInt, i2 :: NonnegInt, f2 :: NonnegInt):
-    cond
-    | curr < i1 : [data[curr], & swap_elements(curr + 1, i1, f1, i2, f2)]
-    | curr >= i1 && curr < f1 : [data[i2 + (curr - i1)], & swap_elements(curr + 1, i1 ,f1, i2, f2)]
-    | curr >= f1 && curr < i2 : [data[curr], & swap_elements(curr + 1, i1, f1, i2, f2)]
-    | curr >= i2 && curr < f2 : [data[i1 + (curr - i2)], & swap_elements(curr + 1, i1, f1, i2, f2)]
-    | curr >= f2 : data.take_last(data.length() - f2)
+    let mutable _data = data
+    for (i: i_pos1..f_pos1,
+         j: i_pos2..f_pos2):
+      _data := ListOps.swap(_data, i, j)
+    data := _data
 
   method row_reduce():
     if shape.length() == 2
@@ -242,6 +247,7 @@ fun remove_at_index(l :: List, ind :: NonnegInt || List):
 
 /*fun dot_helper(m :: Matrix, other :: Matrix, axes :: List, indices :: List, curr :: List):
   match indices */
+    
   
 operator ((x :: Matrix) <.> (y :: Matrix)) :: Matrix:
   ~stronger_than: ==

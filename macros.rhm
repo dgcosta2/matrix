@@ -1,4 +1,4 @@
-#lang rhombus
+#lang rhombus/and_meta
 
 import "matrix.rhm" open
 
@@ -13,5 +13,3 @@ macro 'matrix $l':
 operator (m :: Matrix) shape (s :: List):
   ~weaker_than: matrix
   m.re_shape(s)
-  
-

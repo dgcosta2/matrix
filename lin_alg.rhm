@@ -1,4 +1,4 @@
-#lang rhombus
+#lang rhombus/and_meta
 
 import "matrix.rhm" open
 import "list_ops.rhm" as ListOps
@@ -8,16 +8,100 @@ export:
   solve
   row_reduce
   det
+  identity
+  inverse
 
 
+meta syntax_class Option
+| '$(option :: Identifier)($field, ...)':
+    field class = 'class $option(mutable $field, ...)' 
+| '$(option :: Identifier)':
+    field class = 'class $option()'
+
+defn.macro 'type $(typeName :: Identifier)
+            | $(variant :: Option)
+            | ...':
+  'interface $typeName
+   $variant.class: implements $typeName
+   ...'
+
+type Maybe
+| None
+| Some(val :: Any)
+
+fun find_pivot(m :: Matrix, at_row :: PosInt, column :: PosInt) :: Maybe:
+  cond
+  | at_row <= m.shape[0] && m[[at_row, column]] != 0: Some(at_row)
+  | at_row <= m.shape[0]: find_pivot(m, at_row + 1, column)
+  | at_row > m.shape[0]: None()
+      
+fun map_row(m :: Matrix, row :: PosInt, f :: Function.of_arity(1)):
+  for (col: 1 ..= m.shape[1]):
+    m[[row, col]] := f(m[[row,col]])
+
+fun map_col(m :: Matrix, col :: PosInt, f :: Function.of_arity(1)):
+  for (row: 1 ..= m.shape[0]):
+    m[[row, col]] := f(m[[row, col]])
+
+fun gaussian_elimination(m :: Matrix, det :: Maybe, identity :: Maybe):
+  let mutable pivot_row = 1
+  let mutable sign = 1
+  
+  for (col: 1 ..= m.shape[1]):
+    let piv = find_pivot(m, pivot_row, col)
+    match piv
+    | Some(pivot):
+        when pivot_row != pivot
+        | m.swap_rows(pivot_row, pivot)
+          // performs the same swap in the identity matrix for inverse calculating purposes
+          match identity
+          | Some(id_matrix): id_matrix.swap_rows(pivot_row, pivot)
+          | _: #void
+          // if a swap is performed, change the sign of the determinant
+          sign := sign * -1
+        let pivot_value = m[[pivot_row, col]]
+        match det
+        | Some(value): det.val := value * pivot_value
+        | _: #void
+        // divide the whole row by pivot_value
+        map_row(m, pivot_row, (_ / pivot_value))
+        
+        match identity
+        | Some(id_matrix): map_row(id_matrix, pivot_row, (_ / pivot_value))
+        | _: #void
+             
+        for (row: 1 ..= m.shape[0]):
+          skip_when row == pivot_row || m[[row, col]] == 0
+          let factor = m[[row,col]]
+          for (column: col ..= m.shape[1]):
+            let pivot_value = m[[pivot_row, column]]
+            m[[row, column]] := m[[row, column]] - factor * pivot_value
+          match identity
+          | Some(id_matrix):
+              for (column: 1 ..= id_matrix.shape[1]):
+                let pivot_id_value = id_matrix[[pivot_row, column]]
+                id_matrix[[row, column]] := id_matrix[[row, column]] - factor * pivot_id_value
+          | _: #void
+                
+        pivot_row := pivot_row + 1
+      // no pivot in a row
+    | None():
+        match det:
+        | Some(value): det.val := 0
+        | _: #void
+
+  match det
+  | Some(value): det.val := value * sign
+  | _: #void
+
+  m
+    
 fun det(a :: Matrix):
   if a.is_square()
   | let m = a.copy()
-    let f = m.row_reduce_helper(1, 1, 1)
-    for values(acc = f):
-      each:
-        i: 1..a.shape[0] + 1
-      acc * m[[i, i]]
+    let determinant = Some(1)
+    let _ = gaussian_elimination(m, determinant, None())
+    determinant.val 
   | error("determinants are only calculated on square matrices")
 
 /*
@@ -35,26 +119,43 @@ fun merge_on_right(m1 :: Matrix, m2 :: Matrix) :: Matrix:
 /*
   solves a system of linear equations and returns
   a column vector with the exact solution.
+
+  If there is more than one solution to the system,
+  this function raises an error
 */
 fun solve(a :: Matrix, b :: Matrix) :: Matrix:
   if a.is_square() && b.shape[0] == a.shape[0] && b.shape.length() == 1
-  | let m = merge_on_right(a, b).row_reduce()
-    let mutable l = [m[m.shape] / m[[m.shape.first, m.shape.last - 1]]]
-    // starting on one row above the already calculated result
-    for (r : m.shape.first - 1 >..= 1): 
-      let mutable res = m[[r, m.shape[1]]]
-      for (i : l.length() - 1 >..= 0):
-        res := res - m[[r, m.shape[1] - 1 - i]] * l[i]
-      res := res / m[[r, r]]
-      l := l.add(res)
-    Matrix(~l: l.reverse(), ~s: [l.length()])
+  | let m = row_reduce(merge_on_right(a, b))
+    let _data = for List:
+      each row in 1 ..= m.shape[0]
+      m[[row, m.shape[1]]]
+    Matrix(~l: _data)
   | error("a must be a square matrix and b must be a column vector")
-
 
 fun row_reduce(a :: Matrix):
   if a.shape.length() == 2
   | let m = a.copy()
-    let _ = m.row_reduce_helper(1, 1, 1)
-    m
+    gaussian_elimination(m, None(), None())
   | error("row reducing is only allowed for bi-dimensional matrices")
+
+fun identity(n :: PosInt):
+  if n == 1
+  | Matrix(~l: [1])
+  | let l = for List(i : 0..n):
+      for List(j : 0..n):
+        if j == i
+        | 1
+        | 0
+    Matrix(~l: l)
+
+fun inverse(a :: Matrix) :: Matrix:
+  if a.is_square()
+  | let inv = identity(a.rows())
+    let det = Some(1)
+    gaussian_elimination(a.copy(), det, Some(inv))
+    if det.val != 0
+    | inv
+    | error("matrix is not invertible")
+  | error("inverse is only available for square matrices")
+    
 

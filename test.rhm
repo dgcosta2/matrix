@@ -4,6 +4,7 @@ import "basic.rhm" open
 import "matrix.rhm" open
 import "operators.rhm" open
 import "lin_alg.rhm" open
+import "macros.rhm" open
 
 def m0 = Matrix()
 def m1 = Matrix(~rows: 3, ~columns: 5)
@@ -63,12 +64,6 @@ check s_mult(m4, 0) ~is m4_zero
 check s_mult(m4, 1) ~is m4
 check 1 <*> m4 ~is m4
 
-// swap elements tests
-let ls_m5 = m5_tbt.swap_elements(0, 0, 3, 3, 6)
-check ls_m5 ~is [4, 5, 6, 1, 2, 3]
-let ls_m6 = m6.swap_elements(0, 4, 6, 6, 8)
-check ls_m6 ~is [2, 4, 5, 6, 4, 5, 3, 2, 6, 4, 5, 3]
-
 // row swapping tests
 check m5_tbt.shape ~is [2, 3]
 m5_tbt.swap_rows(1, 2)
@@ -122,3 +117,14 @@ check identity(1) ~is Matrix(~l: [1])
 check cross(Matrix(~l: [5, 6, 2]), Matrix(~l: [1, 1, 1])) ~is Matrix(~l: [4, -3, -1])
 check cross(Matrix(~l: [1, 2, 3]), Matrix(~l: [2, 4, 6])) ~is Matrix(~s: [3])
 check cross(Matrix(~l: [1, 0, 0]), Matrix(~l: [0, 1, 0])) ~is Matrix(~l: [0, 0, 1])
+
+// inverse
+check inverse(matrix [[1, 0, 0], [0, 1, 0], [0, 0, 1]]) ~is matrix [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+check inverse(matrix [[1, 2, 3], [4, 5, 6], [7, 2, 9]]) ~is matrix [[-11/12, 1/3, 1/12], [-1/6, 1/3, -1/6], [3/4, -1/3, 1/12]]
+check inverse(matrix [[1, 2, 3], [4, 5, 6], [5, 7, 9]]) ~throws "matrix is not invertible"
+check inverse(matrix [[1, 2, 3, 4], [1, 2, 3, 4]]) ~throws "inverse is only available for square matrices"
+
+// descending ranges
+def desc_list = for List(i in 5 >.. 0):
+  i
+check desc_list ~is [5, 4, 3, 2, 1]
