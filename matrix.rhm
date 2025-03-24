@@ -252,3 +252,5 @@ fun remove_at_index(l :: List, ind :: NonnegInt || List):
 operator ((x :: Matrix) <.> (y :: Matrix)) :: Matrix:
   ~stronger_than: ==
   x.contr(y)
+
+                             
