@@ -7,45 +7,37 @@ export:
   Matrix
   <.>
 
-class Matrix():
+class Matrix(mutable data :: List, mutable shape :: List):
   implements Indexable
   implements Equatable
   implements Printable
   implements MutableIndexable
 
-  field data: []
-  field shape: []
   field stride: []
   constructor:
   | ():
-      let matrix = super()
-      matrix.shape := [1]
+      let matrix = super([0], [1])
       matrix.stride := [1]
-      matrix.data := [0]
       matrix
   | (~rows: n :: PosInt, ~columns: k :: PosInt):
       let l = for List(i: 0..(n * k)):
         0
-      let matrix = super()
-      matrix.shape := [n, k]
+      let matrix = super(l, [n, k])
       matrix.stride := matrix.stride_from_shape(matrix.shape)
-      matrix.data := l
       matrix
   // takes a nested list and stores it linearly
   | (~l: l :: List):
-      let matrix = super()
+      // let matrix = super()
       let flat = ListOps.flat_list(l)
+      let matrix = super(flat, [1])
       matrix.shape := matrix.read_shape(l)
       matrix.stride := matrix.stride_from_shape(matrix.shape)
-      matrix.data := flat
       matrix
   // takes a flat list l and a shape list s
   | (~l: l :: List, ~s: s :: List):
       let p = ListOps.reduce(s, 1, (_ * _))
       if p == l.length()
-      | let matrix = super()
-        matrix.data := l
-        matrix.shape := s
+      | let matrix = super(l, s)
         matrix.stride := matrix.stride_from_shape(s)
         matrix
       | error("invalid shape for list l")
@@ -53,9 +45,7 @@ class Matrix():
       let p = ListOps.reduce(s, 1, (_ * _))
       let d = for List(i: 0..p):
         0
-      let matrix = super()
-      matrix.data := d
-      matrix.shape := s
+      let matrix = super(d, s)
       matrix.stride := matrix.stride_from_shape(s)
       matrix
 
@@ -110,47 +100,6 @@ class Matrix():
       _data := ListOps.swap(_data, i, j)
     data := _data
 
-  method row_reduce():
-    if shape.length() == 2
-    | let m = copy()
-      let _ = m.row_reduce_helper(1, 1, 1)
-      m
-    | error("row reducing is only allowed for bi-dimensional matrices")
-
-  // not yet finished. needs to turn all non-leading-one
-  // elements into zeros
-  method row_reduce_helper(r :: PosInt, c :: PosInt, f :: Real):
-    if r <= shape[0] && c <= shape[1]
-      // find the pivot in column c
-    | let i_max = find_max(r, c)
-      cond
-      | this[[i_max, c]] == 0:
-          // no pivot in this column
-          row_reduce_helper(r, c + 1, f)
-      | ~else:
-          swap_rows(r, i_max)
-          // for all rows below the pivot
-          for (i: r + 1..shape[0] + 1):
-            let factor = this[[i, c]] / this[[r, c]]
-            this[[i, c]] := 0
-            for (j: c + 1..shape[1] + 1):
-              this[[i, j]] := this[[i, j]] - this[[r, j]] * factor
-          if r == i_max
-          | row_reduce_helper(r + 1, c + 1, f)
-          | row_reduce_helper(r + 1, c + 1, f * -1)
-    | f
-      
-  private method find_max(r :: PosInt, c :: PosInt):
-    let mutable max = math.abs(this[[r, c]])
-    let mutable max_index = r
-    for (i: r..shape[0] + 1):
-      let curr = math.abs(this[[i, c]])
-      when curr > max
-      | max := curr
-        max_index := i
-    max_index
-    
-
   // creates a copy of this matrix
   method copy():
     Matrix(~l: data, ~s: shape)
@@ -167,7 +116,6 @@ class Matrix():
     match l
     | [(a :: Number), b, ...]: [l.length()]
     | [(a :: List), b, ...]: [l.length(), & read_shape(a)]
-
 
   /*
       The stride is a list of values that represent, for each dimension,

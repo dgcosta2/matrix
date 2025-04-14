@@ -5,7 +5,7 @@ export:
   >..
   >..=
 
-fun desc_range(from :: Int, to :: Int = #neginf, incl :: Boolean = #true) :: Sequence:
+fun desc_range(from :: Int, to :: Int || matching(#neginf) = #neginf, incl :: Boolean = #true) :: Sequence:
     if from >= to
     | Sequence.make(
         ~initial_position: from,
@@ -14,7 +14,6 @@ fun desc_range(from :: Int, to :: Int = #neginf, incl :: Boolean = #true) :: Seq
         ~continue_at_position: fun(i): if incl | i >= to | i > to
       )
     | error("desc_range requires a starting point greater than or equal to the ending point")
-
     
 macro >..:
   ~order: enumeration

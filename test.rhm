@@ -125,6 +125,27 @@ check inverse(matrix [[1, 2, 3], [4, 5, 6], [5, 7, 9]]) ~throws "matrix is not i
 check inverse(matrix [[1, 2, 3, 4], [1, 2, 3, 4]]) ~throws "inverse is only available for square matrices"
 
 // descending ranges
-def desc_list = for List(i in 5 >.. 0):
+def mutable desc_list = for List(i in 5 >.. 0):
   i
 check desc_list ~is [5, 4, 3, 2, 1]
+desc_list := for List:
+  each:
+    v in ["a", "b", "c"]
+    i in 5 >..
+  [i, v]
+
+def nest = for:
+  each i in [1, 2, 3]
+  each j in 10+3>..10
+  [i, j]
+  ~into List
+
+fun grid2(m, n):
+    for List:
+      each i in m >..0
+      let k = i + 1
+      each j in n >.. 0
+      [k, j]
+check grid2(2,3) ~is [[3, 3], [3, 2], [3, 1], [2, 3], [2, 2], [2, 1]]
+
+
