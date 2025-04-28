@@ -10,6 +10,7 @@ export:
   det
   identity
   inverse
+  trace
 
 
 meta syntax_class Option
@@ -157,5 +158,13 @@ fun inverse(a :: Matrix) :: Matrix:
     | inv
     | error("matrix is not invertible")
   | error("inverse is only available for square matrices")
+
+fun trace(a :: Matrix) :: Number:
+  if a.is_square()
+  | for values(sum = 0):
+      each i in a.shape[0]
+      sum + a[[i, i]]
+  | error("trace can only be calculated for square matrices")
+        
     
 

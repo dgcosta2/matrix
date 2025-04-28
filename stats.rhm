@@ -1,0 +1,22 @@
+#lang rhombus
+
+import "matrix.rhm" open
+import "list_ops.rhm" as ListOps
+import "operators.rhm" open
+
+export:
+  mean
+  variance
+
+fun mean(a :: Matrix) :: Number:
+  let sum = for values(add = 0):
+    each i in a.data
+    add + i
+  sum / a.data.length()
+
+fun variance(a :: Matrix) :: Number:
+  let mean = mean(a)
+  let sum = for values(add = 0):
+    each i in a.data
+    add + ((i - mean)**2)
+  sum / (a.data.length() - 1)

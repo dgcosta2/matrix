@@ -5,6 +5,7 @@ import "matrix.rhm" open
 import "operators.rhm" open
 import "lin_alg.rhm" open
 import "macros.rhm" open
+import "stats.rhm" open
 
 def m0 = Matrix()
 def m1 = Matrix(~rows: 3, ~columns: 5)
@@ -148,4 +149,10 @@ fun grid2(m, n):
       [k, j]
 check grid2(2,3) ~is [[3, 3], [3, 2], [3, 1], [2, 3], [2, 2], [2, 1]]
 
+// mean
+check mean(m2) ~is 0
+check mean(matrix for List(i: 0..9) : i) ~is 4
+check mean(matrix [1, 2, 4, 5]) ~is 3
 
+//variance
+check variance(matrix [1, 10, 14, 22, 27]) ~is 1037/10

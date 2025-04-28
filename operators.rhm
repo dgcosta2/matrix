@@ -1,7 +1,6 @@
 #lang rhombus/and_meta
 
 export:
-  ^
   >..
   >..=
 
@@ -23,12 +22,7 @@ macro >..:
     'desc_range($a)'
 
 operator ((a :: Int) >..= (b :: Int)):
-  ~weaker_than: + - / * ^
+  ~weaker_than: + - / * 
   desc_range(a, b, #true)
-    
-operator ((x :: Real) ^ (y :: NonnegInt)):
-  ~stronger_than: + - / *
-  match y
-  | 0: 1
-  | ~else: x * x ^ (y - 1)
+
 
