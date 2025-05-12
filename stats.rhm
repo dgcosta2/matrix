@@ -3,19 +3,29 @@
 import "matrix.rhm" open
 import "list_ops.rhm" as ListOps
 import "operators.rhm" open
+import "basic.rhm" open
 
 export:
-  mean
+  average
   variance
 
-fun mean(a :: Matrix) :: Number:
-  let sum = for values(add = 0):
-    each i in a.data
-    add + i
-  sum / a.data.length()
+fun
+| average(a :: Matrix) :: Number:
+    let sum = for values(add = 0):
+      each i in a.data
+      add + i
+    sum / a.data.length()
+| average(a :: Matrix, weights :: Matrix) :: Number:
+    if same_shape(a, weights)
+    | let sum = for values(add = 0):
+        each i in 0..a.data.length()
+        add + a.data[i] * weights.data[i]
+      sum / internal_sum(weights)
+    | error("weights matrix must have same dimensions as input data matrix")
+
 
 fun variance(a :: Matrix) :: Number:
-  let mean = mean(a)
+  let mean = average(a)
   let sum = for values(add = 0):
     each i in a.data
     add + ((i - mean)**2)

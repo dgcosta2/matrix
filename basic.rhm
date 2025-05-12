@@ -8,6 +8,17 @@ export:
   add
   s_mult
   cross
+  same_shape
+  internal_sum
+
+fun same_shape(a :: Matrix, b :: Matrix):
+  if a.shape.length() == b.shape.length()
+  | let res = for values(same = #true):
+      each i in 0..a.shape.length()
+      final_when a.shape[i] == b.shape[i]
+      same && (a.shape[i] == b.shape[i])
+    res
+  | #false
 
 fun add(a :: Matrix, b :: Matrix):
   if a.shape == b.shape
@@ -42,7 +53,13 @@ fun mult(a :: Matrix, b :: Matrix):
       each k: 1..=a.shape[1]
       m[[i,j]] := m[[i,j]] + a[[i,k]] * b[[k,j]]
     m
-  | error("Multiplication only allowed for 2-dimensional matrices")
+  | error("Multiplication only allowed for 2-dimensional matrices")\
+
+fun internal_sum(a :: Matrix):
+  let sum = for values(total = 0):
+    each i in a.data
+    total + i
+  sum
 
     
 operator ((x :: Matrix) <+> (y :: Matrix)) :: Matrix:

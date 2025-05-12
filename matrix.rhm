@@ -114,6 +114,7 @@ class Matrix(mutable data :: List, mutable shape :: List):
    */
   private method read_shape(l :: List):
     match l
+    | []: [0]
     | [(a :: Number), b, ...]: [l.length()]
     | [(a :: List), b, ...]: [l.length(), & read_shape(a)]
 

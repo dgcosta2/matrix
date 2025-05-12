@@ -149,10 +149,16 @@ fun grid2(m, n):
       [k, j]
 check grid2(2,3) ~is [[3, 3], [3, 2], [3, 1], [2, 3], [2, 2], [2, 1]]
 
-// mean
-check mean(m2) ~is 0
-check mean(matrix for List(i: 0..9) : i) ~is 4
-check mean(matrix [1, 2, 4, 5]) ~is 3
+// shame shape
+
+check same_shape(matrix [[1,2,3], [4,5,6]], Matrix(~l: [1, 2, 3, 4, 5, 6], ~s: [2, 3])) ~is #true
+check same_shape(matrix [], Matrix(~l: [])) ~is #true
+check same_shape(Matrix(~s: [4, 3]), Matrix(~s: [3, 4])) ~is #false
+
+// average
+check average(m2) ~is 0
+check average(matrix for List(i: 0..9) : i) ~is 4
+check average(matrix [1, 2, 4, 5]) ~is 3
 
 //variance
 check variance(matrix [1, 10, 14, 22, 27]) ~is 1037/10
